@@ -14,7 +14,8 @@ namespace BudgetAlert.Infrastructure.Persistence.Configurations
 
             builder.HasOne<Budget>()
                 .WithMany()
-                .HasForeignKey(a => a.BudgetId);
+                .HasForeignKey(a => a.BudgetId)
+                .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasOne<AlertRule>()
                 .WithMany()

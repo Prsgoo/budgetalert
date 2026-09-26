@@ -148,7 +148,7 @@ namespace BudgetAlert.Infrastructure.Migrations
                     b.HasOne("BudgetAlert.Domain.Entities.Budget", null)
                         .WithMany()
                         .HasForeignKey("BudgetId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
                 });
 

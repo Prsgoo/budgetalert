@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BudgetAlert.Infrastructure.Migrations
 {
     [DbContext(typeof(BudgetAlertDbContext))]
-    [Migration("20260926165110_InitialSchema")]
+    [Migration("20260926185915_InitialSchema")]
     partial class InitialSchema
     {
         /// <inheritdoc />
@@ -151,7 +151,7 @@ namespace BudgetAlert.Infrastructure.Migrations
                     b.HasOne("BudgetAlert.Domain.Entities.Budget", null)
                         .WithMany()
                         .HasForeignKey("BudgetId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
                 });
 
