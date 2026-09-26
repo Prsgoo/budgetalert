@@ -22,5 +22,12 @@ namespace BudgetAlert.Infrastructure.Persistence.Repositories
                 .Include(b => b.Transactions)
                 .FirstOrDefaultAsync(b => b.Id == id, ct);
         }
+
+        public Task<Budget?> GetByIdWithAlertRulesAsync(Guid id, CancellationToken ct = default)
+        {
+            return _context.Budgets
+                .Include(b => b.AlertRules)
+                .FirstOrDefaultAsync(b => b.Id == id, ct);
+        }
     }
 }

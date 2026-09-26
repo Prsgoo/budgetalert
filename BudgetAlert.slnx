@@ -10,6 +10,7 @@
     <Project Path="tests/BudgetAlert.Application.Tests/BudgetAlert.Application.Tests.csproj" />
     <Project Path="tests/BudgetAlert.Domain.Tests/BudgetAlert.Domain.Tests.csproj" />
     <Project Path="tests/BudgetAlert.Infrastructure.Tests/BudgetAlert.Infrastructure.Tests.csproj" />
+    <Project Path="tests/BudgetAlert.Worker.Tests/BudgetAlert.Worker.Tests.csproj" />
   </Folder>
   <Folder Name="/workers/">
     <Project Path="workers/BudgetAlert.Worker/BudgetAlert.Worker.csproj" />

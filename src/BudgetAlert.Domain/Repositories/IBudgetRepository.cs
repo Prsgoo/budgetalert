@@ -8,5 +8,6 @@ namespace BudgetAlert.Domain.Repositories
         Task<Budget?> GetByIdAsync(Guid id, CancellationToken ct = default);
         void Add(Budget budget);
         Task<Budget?> GetByIdWithTransactionsAsync(Guid id, CancellationToken ct = default);
+        Task<Budget?> GetByIdWithAlertRulesAsync(Guid id, CancellationToken ct = default);
     }
 }
