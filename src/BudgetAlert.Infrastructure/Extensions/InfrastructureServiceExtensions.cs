@@ -16,12 +16,13 @@ namespace BudgetAlert.Infrastructure.Extensions
             services.AddDbContext<BudgetAlertDbContext>(opts =>
                 opts.UseSqlServer(config.GetConnectionString("Default")));
 
+            services.Configure<RabbitMqOptions>(config.GetSection("RabbitMq"));
             services.AddSingleton<IEventBus, RabbitMqEventBus>();
 
             services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<BudgetAlertDbContext>());
             services.AddScoped<IBudgetRepository, BudgetRepository>();
             services.AddScoped<IAlertRepository, AlertRepository>();
-            
+
             return services;
         }
     }
