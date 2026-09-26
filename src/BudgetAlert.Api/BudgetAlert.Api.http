@@ -1,6 +1,0 @@
-@BudgetAlert.API_HostAddress = http://localhost:5143
-
-GET {{BudgetAlert.API_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

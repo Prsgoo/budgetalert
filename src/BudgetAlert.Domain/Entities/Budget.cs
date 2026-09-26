@@ -11,8 +11,8 @@ namespace BudgetAlert.Domain.Entities
         public IReadOnlyCollection<AlertRule> AlertRules => _alertRules.ToList();
 
         #region Private fields
-        private IList<Transaction> _transactions { get; } = [];
-        private IList<AlertRule> _alertRules { get; } = [];
+        private readonly List<Transaction> _transactions = [];
+        private readonly List<AlertRule> _alertRules = [];
         #endregion
 
         public static Budget Create(string name, decimal limit, string currency)
