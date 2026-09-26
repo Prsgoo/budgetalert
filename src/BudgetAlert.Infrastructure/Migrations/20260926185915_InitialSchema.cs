@@ -92,8 +92,7 @@ namespace BudgetAlert.Infrastructure.Migrations
                         name: "FK_Alerts_Budgets_BudgetId",
                         column: x => x.BudgetId,
                         principalTable: "Budgets",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
