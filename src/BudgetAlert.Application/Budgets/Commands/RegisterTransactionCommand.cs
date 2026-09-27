@@ -35,7 +35,8 @@ namespace BudgetAlert.Application.Budgets.Commands
             var budget = await _budgetRepository.GetByIdAsync(request.BudgetId, cancellationToken)
                 ?? throw new NotFoundException(nameof(Budget), request.BudgetId);
 
-            budget.RegisterTransaction(request.Amount, request.Description, request.OccurredAt);
+            var transaction = budget.RegisterTransaction(request.Amount, request.Description, request.OccurredAt);
+            _unitOfWork.Register(transaction);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             // Events are published after SaveChangesAsync so we never publish an event for a transaction
@@ -44,7 +45,7 @@ namespace BudgetAlert.Application.Budgets.Commands
             foreach (var evt in budget.PopDomainEvents())
                 await _eventBus.PublishAsync(evt, cancellationToken);
 
-            return budget.Transactions.Last().Id;
+            return transaction.Id;
         }
     }
 }

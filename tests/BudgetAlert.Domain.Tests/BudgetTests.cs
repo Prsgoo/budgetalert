@@ -160,9 +160,9 @@ public class BudgetTests
     {
         var budget = Budget.Create("Monthly", 1000m, "EUR");
 
-        var ruleId = budget.AddAlertRule(80m);
+        var rule = budget.AddAlertRule(80m);
 
-        Assert.NotEqual(Guid.Empty, ruleId);
+        Assert.NotEqual(Guid.Empty, rule.Id);
     }
 
     [Fact]
@@ -170,9 +170,9 @@ public class BudgetTests
     {
         var budget = Budget.Create("Monthly", 1000m, "EUR");
 
-        var ruleId = budget.AddAlertRule(80m);
+        var rule = budget.AddAlertRule(80m);
 
-        Assert.Equal(ruleId, budget.AlertRules.Single().Id);
+        Assert.Equal(rule.Id, budget.AlertRules.Single().Id);
     }
 
     [Fact]

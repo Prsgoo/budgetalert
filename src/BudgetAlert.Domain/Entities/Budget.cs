@@ -27,7 +27,7 @@ namespace BudgetAlert.Domain.Entities
             };
         }
 
-        public void RegisterTransaction(decimal amount, string description, DateTime occurredAt)
+        public Transaction RegisterTransaction(decimal amount, string description, DateTime occurredAt)
         {
             var transaction = Transaction.Create(Id, amount, description, occurredAt);
             _transactions.Add(transaction);
@@ -40,13 +40,14 @@ namespace BudgetAlert.Domain.Entities
                 CurrentSpend: CurrentSpend,
                 BudgetLimit: Limit
             ));
+            return transaction;
         }
 
-        public Guid AddAlertRule(decimal thresholdPercentage)
+        public AlertRule AddAlertRule(decimal thresholdPercentage)
         {
             var alertRule = AlertRule.Create(Id, thresholdPercentage);
             _alertRules.Add(alertRule);
-            return alertRule.Id;
+            return alertRule;
         }
 
         public decimal CurrentSpend => Transactions.Sum(t => t.Amount);

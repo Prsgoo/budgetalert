@@ -23,9 +23,9 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 
-// Auto-run migrations on startup
-using (var scope = app.Services.CreateScope())
+if (!app.Environment.IsEnvironment("Testing"))
 {
+    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<BudgetAlertDbContext>();
     await db.Database.MigrateAsync();
 }
@@ -35,3 +35,5 @@ app.UseSwaggerUI();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.MapControllers();
 app.Run();
+
+public partial class Program { }

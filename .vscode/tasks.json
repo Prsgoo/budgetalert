@@ -1,0 +1,28 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "docker-compose-up",
+      "type": "shell",
+      "command": "docker compose up -d",
+      "presentation": { "reveal": "silent" },
+      "problemMatcher": []
+    },
+    {
+      "label": "build-api",
+      "command": "dotnet",
+      "type": "process",
+      "args": ["build", "${workspaceFolder}/src/BudgetAlert.Api/BudgetAlert.API.csproj"],
+      "problemMatcher": "$msCompile",
+      "dependsOn": "docker-compose-up"
+    },
+    {
+      "label": "build-worker",
+      "command": "dotnet",
+      "type": "process",
+      "args": ["build", "${workspaceFolder}/workers/BudgetAlert.Worker/BudgetAlert.Worker.csproj"],
+      "problemMatcher": "$msCompile",
+      "dependsOn": "docker-compose-up"
+    }
+  ]
+}

@@ -13,6 +13,8 @@ namespace BudgetAlert.Infrastructure.Persistence
 
         public BudgetAlertDbContext(DbContextOptions<BudgetAlertDbContext> options) : base(options) { }
 
+        public void Register<T>(T entity) where T : class => Set<T>().Add(entity);
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(BudgetAlertDbContext).Assembly);
