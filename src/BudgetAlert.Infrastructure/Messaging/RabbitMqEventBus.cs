@@ -41,8 +41,9 @@ namespace BudgetAlert.Infrastructure.Messaging
 
         public async Task PublishAsync<T>(T @event, CancellationToken cancellationToken = default) where T : IDomainEvent
         {
-            var body = JsonSerializer.SerializeToUtf8Bytes(@event);
-            var routingKey = typeof(T).Name.ToLowerInvariant();
+            var eventType = @event.GetType();
+            var body = JsonSerializer.SerializeToUtf8Bytes(@event, eventType);
+            var routingKey = eventType.Name.ToLowerInvariant();
             var props = new BasicProperties
             {
                 ContentType = "application/json",

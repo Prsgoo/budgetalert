@@ -9,10 +9,10 @@ public class AlertRuleEvaluatorTests
 {
     private readonly Mock<IBudgetRepository> _budgetRepo = new();
     private readonly Mock<IAlertRepository> _alertRepo = new();
-    private readonly Mock<IUnitOfWork> _uow = new();
+    private readonly Mock<IUnitOfWork> _unitOfWork = new();
 
     private AlertRuleEvaluator CreateEvaluator() =>
-        new(_budgetRepo.Object, _alertRepo.Object, _uow.Object);
+        new(_budgetRepo.Object, _alertRepo.Object, _unitOfWork.Object);
 
     private static TransactionRegistered CreateEvent(Guid budgetId, decimal amount, decimal currentSpend, decimal budgetLimit = 1000m) =>
         new(Guid.NewGuid(), DateTime.UtcNow, budgetId, Guid.NewGuid(), amount, currentSpend, budgetLimit);
@@ -131,11 +131,11 @@ public class AlertRuleEvaluatorTests
         var budget = Budget.Create("Monthly", 1000m, "EUR");
         _budgetRepo.Setup(r => r.GetByIdWithAlertRulesAsync(budget.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(budget);
-        _uow.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(0);
+        _unitOfWork.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(0);
         var evaluator = CreateEvaluator();
 
         await evaluator.EvaluateAsync(CreateEvent(budget.Id, 0m, 0m), CancellationToken.None);
 
-        _uow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 }

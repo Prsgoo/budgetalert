@@ -11,7 +11,7 @@ namespace BudgetAlert.Application.Tests.Budgets.Commands;
 public class RegisterTransactionCommandHandlerTests
 {
     private readonly Mock<IBudgetRepository> _repo = new();
-    private readonly Mock<IUnitOfWork> _uow = new();
+    private readonly Mock<IUnitOfWork> _unitOfWork = new();
     private readonly Mock<IEventBus> _eventBus = new();
 
     [Fact]
@@ -19,7 +19,7 @@ public class RegisterTransactionCommandHandlerTests
     {
         _repo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Budget?)null);
-        var handler = new RegisterTransactionCommandHandler(_repo.Object, _uow.Object, _eventBus.Object);
+        var handler = new RegisterTransactionCommandHandler(_repo.Object, _unitOfWork.Object, _eventBus.Object);
 
         await Assert.ThrowsAsync<NotFoundException>(() =>
             handler.Handle(new RegisterTransactionCommand(Guid.NewGuid(), 100m, "Groceries", DateTime.UtcNow), CancellationToken.None));
@@ -31,7 +31,7 @@ public class RegisterTransactionCommandHandlerTests
         var budget = Budget.Create("Monthly", 1000m, "EUR");
         _repo.Setup(r => r.GetByIdAsync(budget.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(budget);
-        var handler = new RegisterTransactionCommandHandler(_repo.Object, _uow.Object, _eventBus.Object);
+        var handler = new RegisterTransactionCommandHandler(_repo.Object, _unitOfWork.Object, _eventBus.Object);
 
         var id = await handler.Handle(
             new RegisterTransactionCommand(budget.Id, 100m, "Groceries", DateTime.UtcNow), CancellationToken.None);
@@ -45,7 +45,7 @@ public class RegisterTransactionCommandHandlerTests
         var budget = Budget.Create("Monthly", 1000m, "EUR");
         _repo.Setup(r => r.GetByIdAsync(budget.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(budget);
-        var handler = new RegisterTransactionCommandHandler(_repo.Object, _uow.Object, _eventBus.Object);
+        var handler = new RegisterTransactionCommandHandler(_repo.Object, _unitOfWork.Object, _eventBus.Object);
 
         await handler.Handle(
             new RegisterTransactionCommand(budget.Id, 100m, "Groceries", DateTime.UtcNow), CancellationToken.None);
@@ -59,9 +59,9 @@ public class RegisterTransactionCommandHandlerTests
         var budget = Budget.Create("Monthly", 1000m, "EUR");
         _repo.Setup(r => r.GetByIdAsync(budget.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(budget);
-        _uow.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
+        _unitOfWork.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("DB error"));
-        var handler = new RegisterTransactionCommandHandler(_repo.Object, _uow.Object, _eventBus.Object);
+        var handler = new RegisterTransactionCommandHandler(_repo.Object, _unitOfWork.Object, _eventBus.Object);
 
         await Assert.ThrowsAsync<Exception>(() =>
             handler.Handle(new RegisterTransactionCommand(budget.Id, 100m, "Groceries", DateTime.UtcNow), CancellationToken.None));

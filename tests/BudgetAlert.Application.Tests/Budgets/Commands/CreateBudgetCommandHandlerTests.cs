@@ -8,12 +8,12 @@ namespace BudgetAlert.Application.Tests.Budgets.Commands;
 public class CreateBudgetCommandHandlerTests
 {
     private readonly Mock<IBudgetRepository> _repo = new();
-    private readonly Mock<IUnitOfWork> _uow = new();
+    private readonly Mock<IUnitOfWork> _unitOfWork = new();
 
     [Fact]
     public async Task Handle_CallsRepositoryAdd()
     {
-        var handler = new CreateBudgetCommandHandler(_repo.Object, _uow.Object);
+        var handler = new CreateBudgetCommandHandler(_repo.Object, _unitOfWork.Object);
 
         await handler.Handle(new CreateBudgetCommand("Monthly", 1000m, "EUR"), CancellationToken.None);
 
@@ -23,17 +23,17 @@ public class CreateBudgetCommandHandlerTests
     [Fact]
     public async Task Handle_CallsSaveChanges()
     {
-        var handler = new CreateBudgetCommandHandler(_repo.Object, _uow.Object);
+        var handler = new CreateBudgetCommandHandler(_repo.Object, _unitOfWork.Object);
 
         await handler.Handle(new CreateBudgetCommand("Monthly", 1000m, "EUR"), CancellationToken.None);
 
-        _uow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
     public async Task Handle_ReturnsNonEmptyGuid()
     {
-        var handler = new CreateBudgetCommandHandler(_repo.Object, _uow.Object);
+        var handler = new CreateBudgetCommandHandler(_repo.Object, _unitOfWork.Object);
 
         var id = await handler.Handle(new CreateBudgetCommand("Monthly", 1000m, "EUR"), CancellationToken.None);
 

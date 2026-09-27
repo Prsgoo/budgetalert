@@ -11,6 +11,8 @@ namespace BudgetAlert.Api.Tests.Helpers;
 
 public class ApiTestFactory : WebApplicationFactory<Program>
 {
+    public FakeAlertRepository Alerts { get; } = new();
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
@@ -18,7 +20,7 @@ public class ApiTestFactory : WebApplicationFactory<Program>
         {
             services.AddSingleton<IEventBus, NoOpEventBus>();
             services.AddSingleton<IBudgetRepository, FakeBudgetRepository>();
-            services.AddSingleton<IAlertRepository, FakeAlertRepository>();
+            services.AddSingleton<IAlertRepository>(Alerts);
             services.AddSingleton<IUnitOfWork, FakeUnitOfWork>();
         });
     }
@@ -26,7 +28,7 @@ public class ApiTestFactory : WebApplicationFactory<Program>
 
 public class FakeBudgetRepository : IBudgetRepository
 {
-    private readonly Dictionary<Guid, Budget> _store = new();
+    private readonly Dictionary<Guid, Budget> _store = [];
 
     public void Add(Budget budget) => _store[budget.Id] = budget;
     public Task<Budget?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -39,9 +41,16 @@ public class FakeBudgetRepository : IBudgetRepository
 
 public class FakeAlertRepository : IAlertRepository
 {
-    public void Add(Alert alert) { }
+    private readonly List<Alert> _store = [];
+
+    public void Add(Alert alert) => _store.Add(alert);
     public Task<IReadOnlyList<Alert>> GetAsync(Guid? budgetId, CancellationToken cancellationToken = default)
-        => Task.FromResult<IReadOnlyList<Alert>>([]);
+    {
+        var result = budgetId.HasValue
+            ? _store.Where(a => a.BudgetId == budgetId.Value).ToList()
+            : _store.ToList();
+        return Task.FromResult<IReadOnlyList<Alert>>(result);
+    }
 }
 
 public class FakeUnitOfWork : IUnitOfWork
