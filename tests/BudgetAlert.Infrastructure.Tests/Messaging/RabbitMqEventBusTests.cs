@@ -27,9 +27,10 @@ public class RabbitMqEventBusTests
         );
 
         var body = JsonSerializer.SerializeToUtf8Bytes(evt);
-        var json = JsonDocument.Parse(body);
 
-        Assert.NotNull(json);
+        // Parse throws on invalid JSON - if it returns, the body is valid
+        var json = JsonDocument.Parse(body);
+        Assert.Equal(JsonValueKind.Object, json.RootElement.ValueKind);
     }
 
     [Fact]

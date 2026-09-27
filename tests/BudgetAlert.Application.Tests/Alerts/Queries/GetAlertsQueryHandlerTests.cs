@@ -43,7 +43,7 @@ public class GetAlertsQueryHandlerTests
     {
         var budgetId = Guid.NewGuid();
         var alert1 = CreateAlert(budgetId);
-        System.Threading.Thread.Sleep(5);
+        System.Threading.Thread.Sleep(50);
         var alert2 = CreateAlert(budgetId);
 
         // Pass in ascending order; handler should sort descending
