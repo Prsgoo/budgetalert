@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore
+        run: dotnet restore BudgetAlert.slnx
+
+      - name: Build
+        run: dotnet build BudgetAlert.slnx --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test BudgetAlert.slnx --no-build --configuration Release --collect:"XPlat Code Coverage" --results-directory ./TestResults
+
+      - name: Install ReportGenerator
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool
+
+      - name: Generate coverage summary
+        run: |
+          reportgenerator \
+            -reports:"TestResults/**/coverage.cobertura.xml" \
+            -targetdir:"coverage-report" \
+            -reporttypes:"TextSummary"
+          cat coverage-report/Summary.txt
+
+      - name: Enforce 70% coverage threshold
+        run: |
+          COVERAGE=$(grep -oP 'Line coverage:\s+\K[\d.]+' coverage-report/Summary.txt)
+          echo "Line coverage: ${COVERAGE}%"
+          awk -v cov="$COVERAGE" 'BEGIN {
+            if (cov+0 < 70) {
+              print "::error::Coverage " cov "% is below the 70% threshold"
+              exit 1
+            }
+          }'
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage-report/
+          if-no-files-found: ignore
+
+  release-build:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore
+        run: dotnet restore BudgetAlert.slnx
+
+      - name: Publish API
+        run: dotnet publish src/BudgetAlert.Api/BudgetAlert.Api.csproj --no-restore --configuration Release --output ./publish/api
+
+      - name: Publish Worker
+        run: dotnet publish workers/BudgetAlert.Worker/BudgetAlert.Worker.csproj --no-restore --configuration Release --output ./publish/worker
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ github.sha }}
+          path: publish/
