@@ -11,7 +11,7 @@ namespace BudgetAlert.Infrastructure.Persistence.Repositories
             _context.Alerts.Add(alert);
         }
 
-        public async Task<IReadOnlyList<Alert>> GetAsync(Guid? budgetId, CancellationToken ct = default)
+        public async Task<IReadOnlyList<Alert>> GetAsync(Guid? budgetId, CancellationToken cancellationToken = default)
         {
             var query = _context.Alerts.AsQueryable();
 
@@ -20,7 +20,7 @@ namespace BudgetAlert.Infrastructure.Persistence.Repositories
                 query = query.Where(a => a.BudgetId == budgetId.Value);
             }
 
-            return await query.ToListAsync(ct);
+            return await query.ToListAsync(cancellationToken);
         }
     }
 }
