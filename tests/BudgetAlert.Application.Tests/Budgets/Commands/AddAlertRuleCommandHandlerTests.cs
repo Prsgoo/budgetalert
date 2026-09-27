@@ -9,14 +9,14 @@ namespace BudgetAlert.Application.Tests.Budgets.Commands;
 public class AddAlertRuleCommandHandlerTests
 {
     private readonly Mock<IBudgetRepository> _repo = new();
-    private readonly Mock<IUnitOfWork> _uow = new();
+    private readonly Mock<IUnitOfWork> _unitOfWork = new();
 
     [Fact]
     public async Task Handle_ThrowsNotFoundExceptionWhenBudgetNotFound()
     {
         _repo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Budget?)null);
-        var handler = new AddAlertRuleCommandHandler(_repo.Object, _uow.Object);
+        var handler = new AddAlertRuleCommandHandler(_repo.Object, _unitOfWork.Object);
 
         await Assert.ThrowsAsync<NotFoundException>(() =>
             handler.Handle(new AddAlertRuleCommand(Guid.NewGuid(), 80m), CancellationToken.None));
@@ -28,7 +28,7 @@ public class AddAlertRuleCommandHandlerTests
         var budget = Budget.Create("Monthly", 1000m, "EUR");
         _repo.Setup(r => r.GetByIdAsync(budget.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(budget);
-        var handler = new AddAlertRuleCommandHandler(_repo.Object, _uow.Object);
+        var handler = new AddAlertRuleCommandHandler(_repo.Object, _unitOfWork.Object);
 
         var ruleId = await handler.Handle(new AddAlertRuleCommand(budget.Id, 80m), CancellationToken.None);
 

@@ -4,12 +4,12 @@ using BudgetAlert.Domain.Repositories;
 
 namespace BudgetAlert.Worker
 {
-    public class AlertRuleEvaluator(IBudgetRepository _budgetRepo, IAlertRepository _alertRepo, IUnitOfWork _uow)
+    public class AlertRuleEvaluator(IBudgetRepository _budgetRepo, IAlertRepository _alertRepo, IUnitOfWork _unitOfWork)
     {
 
-        public async Task EvaluateAsync(TransactionRegistered evt, CancellationToken ct)
+        public async Task EvaluateAsync(TransactionRegistered evt, CancellationToken cancellationToken)
         {
-            var budget = await _budgetRepo.GetByIdWithAlertRulesAsync(evt.BudgetId, ct);
+            var budget = await _budgetRepo.GetByIdWithAlertRulesAsync(evt.BudgetId, cancellationToken);
             if (budget is null) return;
 
             foreach (var rule in budget.AlertRules.Where(r => r.IsActive))
@@ -25,7 +25,7 @@ namespace BudgetAlert.Worker
                 }
             }
 
-            await _uow.SaveChangesAsync(ct);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
     }
 }

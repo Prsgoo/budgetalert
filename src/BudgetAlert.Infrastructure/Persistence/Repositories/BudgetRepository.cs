@@ -11,23 +11,23 @@ namespace BudgetAlert.Infrastructure.Persistence.Repositories
             _context.Budgets.Add(budget);
         }
 
-        public Task<Budget?> GetByIdAsync(Guid id, CancellationToken ct = default)
+        public Task<Budget?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            return _context.Budgets.FindAsync(id, ct).AsTask();
+            return _context.Budgets.FindAsync(id, cancellationToken).AsTask();
         }
 
-        public Task<Budget?> GetByIdWithTransactionsAsync(Guid id, CancellationToken ct = default)
+        public Task<Budget?> GetByIdWithTransactionsAsync(Guid id, CancellationToken cancellationToken = default)
         {
             return _context.Budgets
                 .Include(b => b.Transactions)
-                .FirstOrDefaultAsync(b => b.Id == id, ct);
+                .FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
         }
 
-        public Task<Budget?> GetByIdWithAlertRulesAsync(Guid id, CancellationToken ct = default)
+        public Task<Budget?> GetByIdWithAlertRulesAsync(Guid id, CancellationToken cancellationToken = default)
         {
             return _context.Budgets
                 .Include(b => b.AlertRules)
-                .FirstOrDefaultAsync(b => b.Id == id, ct);
+                .FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
         }
     }
 }

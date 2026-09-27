@@ -22,9 +22,10 @@ namespace BudgetAlert.Application.Budgets.Commands
         public async Task<Guid> Handle(AddAlertRuleCommand request, CancellationToken cancellationToken)
         {
             var budget = await _budgetRepository.GetByIdAsync(request.BudgetId, cancellationToken) ?? throw new NotFoundException(nameof(Budget), request.BudgetId);
-            var guid = budget.AddAlertRule(request.ThresholdPercentage);
+            var alertRule = budget.AddAlertRule(request.ThresholdPercentage);
+            _unitOfWork.Register(alertRule);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            return guid;
+            return alertRule.Id;
         }
     }
 }

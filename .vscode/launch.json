@@ -1,0 +1,41 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "API",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-api",
+      "program": "${workspaceFolder}/src/BudgetAlert.Api/bin/Debug/net10.0/BudgetAlert.Api.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/src/BudgetAlert.Api",
+      "stopAtEntry": false,
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      },
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    {
+      "name": "Worker",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-worker",
+      "program": "${workspaceFolder}/workers/BudgetAlert.Worker/bin/Debug/net10.0/BudgetAlert.Worker.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/workers/BudgetAlert.Worker",
+      "stopAtEntry": false,
+      "env": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "API + Worker",
+      "configurations": ["API", "Worker"]
+    }
+  ]
+}
