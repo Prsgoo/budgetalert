@@ -7,8 +7,8 @@ namespace BudgetAlert.Domain.Entities
         public decimal Limit { get; private set; }
         public string Currency { get; private set; } = string.Empty; // ISO 4217, e.g. "EUR"
         public DateTime CreatedAt { get; private set; }
-        public IReadOnlyCollection<Transaction> Transactions => _transactions.ToList();
-        public IReadOnlyCollection<AlertRule> AlertRules => _alertRules.ToList();
+        public IReadOnlyCollection<Transaction> Transactions => _transactions.AsReadOnly();
+        public IReadOnlyCollection<AlertRule> AlertRules => _alertRules.AsReadOnly();
 
         #region Private fields
         private readonly List<Transaction> _transactions = [];

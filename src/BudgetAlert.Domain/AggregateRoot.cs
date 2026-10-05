@@ -4,10 +4,10 @@ namespace BudgetAlert.Domain
 {
     public class AggregateRoot
     {
-        public IReadOnlyList<IDomainEvent> DomainEvents => _domainEvents.ToList();
+        public IReadOnlyList<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
 
         #region Private Fields
-        private IList<IDomainEvent> _domainEvents { get; } = [];
+        private readonly List<IDomainEvent> _domainEvents = [];
         #endregion
 
         public void AddDomainEvent(IDomainEvent domainEvent)
