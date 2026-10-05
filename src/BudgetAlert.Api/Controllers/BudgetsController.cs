@@ -23,5 +23,19 @@ namespace BudgetAlert.Api.Controllers
             var budget = await _sender.Send(new GetBudgetQuery(id), cancellationToken);
             return Ok(budget);
         }
+
+        [HttpPatch("{id:guid}")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] UpdateBudgetRequest request, CancellationToken cancellationToken)
+        {
+            await _sender.Send(new UpdateBudgetCommand(id, request.Name, request.Limit, request.Currency), cancellationToken);
+            return NoContent();
+        }
+
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> Archive(Guid id, CancellationToken cancellationToken)
+        {
+            await _sender.Send(new ArchiveBudgetCommand(id), cancellationToken);
+            return NoContent();
+        }
     }
 }

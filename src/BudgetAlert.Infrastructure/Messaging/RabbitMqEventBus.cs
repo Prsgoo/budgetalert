@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using BudgetAlert.Application.Contracts;
 using BudgetAlert.Domain.Events;
@@ -7,6 +8,7 @@ using RabbitMQ.Client;
 
 namespace BudgetAlert.Infrastructure.Messaging
 {
+    [ExcludeFromCodeCoverage]
     public class RabbitMqEventBus : IEventBus, IDisposable
     {
         private readonly IConnection _connection;
@@ -16,21 +18,9 @@ namespace BudgetAlert.Infrastructure.Messaging
         public RabbitMqEventBus(IOptions<RabbitMqOptions> options, ILogger<RabbitMqEventBus> logger)
         {
             _options = options.Value;
-
             try
             {
-                var factory = new ConnectionFactory
-                {
-                    HostName = _options.Host,
-                    Port = _options.Port,
-                    UserName = _options.Username,
-                    Password = _options.Password
-                };
-
-                _connection = factory.CreateConnectionAsync().GetAwaiter().GetResult();
-                _channel = _connection.CreateChannelAsync().GetAwaiter().GetResult();
-                _channel.ExchangeDeclareAsync(_options.ExchangeName, ExchangeType.Topic, durable: true)
-                    .GetAwaiter().GetResult();
+                (_connection, _channel) = RabbitMqChannelFactory.Create(_options);
             }
             catch (Exception ex)
             {

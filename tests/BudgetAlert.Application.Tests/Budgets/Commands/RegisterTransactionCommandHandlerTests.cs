@@ -17,7 +17,7 @@ public class RegisterTransactionCommandHandlerTests
     [Fact]
     public async Task Handle_ThrowsNotFoundExceptionWhenBudgetNotFound()
     {
-        _repo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+        _repo.Setup(r => r.GetByIdWithTransactionsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Budget?)null);
         var handler = new RegisterTransactionCommandHandler(_repo.Object, _unitOfWork.Object, _eventBus.Object);
 
@@ -29,7 +29,7 @@ public class RegisterTransactionCommandHandlerTests
     public async Task Handle_ReturnsNonEmptyTransactionId()
     {
         var budget = Budget.Create("Monthly", 1000m, "EUR");
-        _repo.Setup(r => r.GetByIdAsync(budget.Id, It.IsAny<CancellationToken>()))
+        _repo.Setup(r => r.GetByIdWithTransactionsAsync(budget.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(budget);
         var handler = new RegisterTransactionCommandHandler(_repo.Object, _unitOfWork.Object, _eventBus.Object);
 
@@ -43,7 +43,7 @@ public class RegisterTransactionCommandHandlerTests
     public async Task Handle_PublishesEventAfterSave()
     {
         var budget = Budget.Create("Monthly", 1000m, "EUR");
-        _repo.Setup(r => r.GetByIdAsync(budget.Id, It.IsAny<CancellationToken>()))
+        _repo.Setup(r => r.GetByIdWithTransactionsAsync(budget.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(budget);
         var handler = new RegisterTransactionCommandHandler(_repo.Object, _unitOfWork.Object, _eventBus.Object);
 
@@ -57,7 +57,7 @@ public class RegisterTransactionCommandHandlerTests
     public async Task Handle_DoesNotPublishEventWhenSaveFails()
     {
         var budget = Budget.Create("Monthly", 1000m, "EUR");
-        _repo.Setup(r => r.GetByIdAsync(budget.Id, It.IsAny<CancellationToken>()))
+        _repo.Setup(r => r.GetByIdWithTransactionsAsync(budget.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(budget);
         _unitOfWork.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("DB error"));

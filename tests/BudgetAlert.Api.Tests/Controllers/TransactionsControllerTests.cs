@@ -81,4 +81,27 @@ public class TransactionsControllerTests(ApiTestFactory factory) : IClassFixture
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
+
+    [Fact]
+    public async Task GetTransactions_WithExistingBudget_Returns200WithTransactions()
+    {
+        var budgetId = await CreateBudgetAsync();
+        await _client.PostAsJsonAsync($"/api/budgets/{budgetId}/transactions", new { amount = 100m, description = "A", occurredAt = DateTime.UtcNow.AddHours(-1) });
+        await _client.PostAsJsonAsync($"/api/budgets/{budgetId}/transactions", new { amount = 200m, description = "B", occurredAt = DateTime.UtcNow.AddHours(-2) });
+
+        var response = await _client.GetAsync($"/api/budgets/{budgetId}/transactions");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(JsonValueKind.Array, body.ValueKind);
+        Assert.Equal(2, body.GetArrayLength());
+    }
+
+    [Fact]
+    public async Task GetTransactions_ForNonexistentBudget_Returns404()
+    {
+        var response = await _client.GetAsync($"/api/budgets/{Guid.NewGuid()}/transactions");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
 }

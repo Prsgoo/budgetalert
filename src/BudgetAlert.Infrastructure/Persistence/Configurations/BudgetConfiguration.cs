@@ -22,6 +22,9 @@ namespace BudgetAlert.Infrastructure.Persistence.Configurations
             builder.Property(b => b.Currency)
                 .HasMaxLength(3);
 
+            builder.Property(b => b.IsArchived)
+                .HasDefaultValue(false);
+
             builder.HasMany(b => b.Transactions)
                 .WithOne()
                 .HasForeignKey(t => t.BudgetId);
