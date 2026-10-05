@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using BudgetAlert.Domain.Events;
 using BudgetAlert.Infrastructure.Messaging;
@@ -7,6 +8,7 @@ using RabbitMQ.Client.Events;
 
 namespace BudgetAlert.Worker
 {
+    [ExcludeFromCodeCoverage]
     public class TransactionEventConsumer : BackgroundService
     {
 

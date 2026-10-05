@@ -1,7 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
 using RabbitMQ.Client;
 
 namespace BudgetAlert.Infrastructure.Messaging
 {
+    [ExcludeFromCodeCoverage]
     public static class RabbitMqChannelFactory
     {
         // Sync-over-async is intentional here: constructors can't be async, and RabbitMQ

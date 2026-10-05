@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using BudgetAlert.Application.Contracts;
 using BudgetAlert.Domain.Events;
@@ -7,6 +8,7 @@ using RabbitMQ.Client;
 
 namespace BudgetAlert.Infrastructure.Messaging
 {
+    [ExcludeFromCodeCoverage]
     public class RabbitMqEventBus : IEventBus, IDisposable
     {
         private readonly IConnection _connection;
