@@ -17,7 +17,7 @@ public class AlertRulesEndpointTests(BudgetAlertApiFactory factory) : IClassFixt
     }
 
     [Fact]
-    public async Task AddAlertRule_ShouldReturn201WithRuleId()
+    public async Task AddAlertRule_ShouldReturn201WithLocationHeader()
     {
         var budgetId = await CreateBudgetAsync();
 
@@ -27,8 +27,8 @@ public class AlertRulesEndpointTests(BudgetAlertApiFactory factory) : IClassFixt
         });
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
-        var ruleId = await response.Content.ReadFromJsonAsync<Guid>();
-        ruleId.Should().NotBeEmpty();
+        response.Headers.Location.Should().NotBeNull();
+        response.Headers.Location!.ToString().Should().Contain($"/api/budgets/{budgetId}/rules/");
     }
 
     [Fact]

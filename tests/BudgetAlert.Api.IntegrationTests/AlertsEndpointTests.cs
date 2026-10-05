@@ -34,7 +34,7 @@ public class AlertsEndpointTests(BudgetAlertApiFactory factory) : IClassFixture<
         var budgetId = Guid.Parse(budgetResponse.Headers.Location!.Segments.Last());
 
         var ruleResponse = await _client.PostAsJsonAsync($"/api/budgets/{budgetId}/rules", new { thresholdPercentage = 80m });
-        var ruleId = await ruleResponse.Content.ReadFromJsonAsync<Guid>();
+        var ruleId = Guid.Parse(ruleResponse.Headers.Location!.Segments.Last());
 
         // Seed an alert directly - the Worker would normally do this
         using (var scope = factory.Services.CreateScope())

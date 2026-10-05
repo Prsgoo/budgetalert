@@ -91,4 +91,100 @@ public class BudgetsControllerTests(ApiTestFactory factory) : IClassFixture<ApiT
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
+
+    [Fact]
+    public async Task UpdateBudget_WithValidBody_Returns204()
+    {
+        var postResponse = await _client.PostAsJsonAsync("/api/budgets", new
+        {
+            name = "Old",
+            limit = 500m,
+            currency = "EUR"
+        });
+        var id = postResponse.Headers.Location!.Segments.Last();
+
+        var response = await _client.PatchAsJsonAsync($"/api/budgets/{id}", new
+        {
+            name = "New",
+            limit = 1000m,
+            currency = "USD"
+        });
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpdateBudget_WithNonexistentId_Returns404()
+    {
+        var response = await _client.PatchAsJsonAsync($"/api/budgets/{Guid.NewGuid()}", new
+        {
+            name = "New",
+            limit = 1000m,
+            currency = "USD"
+        });
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpdateBudget_WithInvalidBody_Returns400()
+    {
+        var postResponse = await _client.PostAsJsonAsync("/api/budgets", new
+        {
+            name = "Budget",
+            limit = 500m,
+            currency = "EUR"
+        });
+        var id = postResponse.Headers.Location!.Segments.Last();
+
+        var response = await _client.PatchAsJsonAsync($"/api/budgets/{id}", new
+        {
+            name = "",
+            limit = 0m,
+            currency = "EU"
+        });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task ArchiveBudget_WithExistingId_Returns204()
+    {
+        var postResponse = await _client.PostAsJsonAsync("/api/budgets", new
+        {
+            name = "ToArchive",
+            limit = 500m,
+            currency = "EUR"
+        });
+        var id = postResponse.Headers.Location!.Segments.Last();
+
+        var response = await _client.DeleteAsync($"/api/budgets/{id}");
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task ArchiveBudget_WithNonexistentId_Returns404()
+    {
+        var response = await _client.DeleteAsync($"/api/budgets/{Guid.NewGuid()}");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetBudget_AfterArchive_Returns404()
+    {
+        var postResponse = await _client.PostAsJsonAsync("/api/budgets", new
+        {
+            name = "ToArchive",
+            limit = 500m,
+            currency = "EUR"
+        });
+        var id = postResponse.Headers.Location!.Segments.Last();
+        await _client.DeleteAsync($"/api/budgets/{id}");
+
+        var response = await _client.GetAsync($"/api/budgets/{id}");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
 }
