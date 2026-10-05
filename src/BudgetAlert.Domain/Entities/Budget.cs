@@ -7,6 +7,7 @@ namespace BudgetAlert.Domain.Entities
         public decimal Limit { get; private set; }
         public string Currency { get; private set; } = string.Empty; // ISO 4217, e.g. "EUR"
         public DateTime CreatedAt { get; private set; }
+        public bool IsArchived { get; private set; }
         public IReadOnlyCollection<Transaction> Transactions => _transactions.AsReadOnly();
         public IReadOnlyCollection<AlertRule> AlertRules => _alertRules.AsReadOnly();
 
@@ -48,6 +49,15 @@ namespace BudgetAlert.Domain.Entities
             var alertRule = AlertRule.Create(Id, thresholdPercentage);
             _alertRules.Add(alertRule);
             return alertRule;
+        }
+
+        public void Archive() => IsArchived = true;
+
+        public void UpdateDetails(string name, decimal limit, string currency)
+        {
+            Name = name;
+            Limit = limit;
+            Currency = currency;
         }
 
         public decimal CurrentSpend => Transactions.Sum(t => t.Amount);

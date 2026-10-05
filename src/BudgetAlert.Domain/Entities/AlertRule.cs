@@ -20,5 +20,13 @@ namespace BudgetAlert.Domain.Entities
                 IsActive = true
             };
         }
+
+        public void Update(decimal thresholdPercentage, bool isActive)
+        {
+            if (thresholdPercentage < 1 || thresholdPercentage > 100)
+                throw new ArgumentOutOfRangeException(nameof(thresholdPercentage), "Threshold percentage must be between 1 and 100.");
+            ThresholdPercentage = thresholdPercentage;
+            IsActive = isActive;
+        }
     }
 }
