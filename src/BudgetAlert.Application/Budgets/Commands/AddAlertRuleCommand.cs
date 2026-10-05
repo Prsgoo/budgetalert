@@ -23,7 +23,7 @@ namespace BudgetAlert.Application.Budgets.Commands
         {
             var budget = await _budgetRepository.GetByIdAsync(request.BudgetId, cancellationToken) ?? throw new NotFoundException(nameof(Budget), request.BudgetId);
             var alertRule = budget.AddAlertRule(request.ThresholdPercentage);
-            _unitOfWork.Register(alertRule);
+            _budgetRepository.AddAlertRule(alertRule);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             return alertRule.Id;
         }

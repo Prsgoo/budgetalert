@@ -7,8 +7,8 @@ namespace BudgetAlert.Domain.Entities
         public decimal Limit { get; private set; }
         public string Currency { get; private set; } = string.Empty; // ISO 4217, e.g. "EUR"
         public DateTime CreatedAt { get; private set; }
-        public IReadOnlyCollection<Transaction> Transactions => _transactions.ToList();
-        public IReadOnlyCollection<AlertRule> AlertRules => _alertRules.ToList();
+        public IReadOnlyCollection<Transaction> Transactions => _transactions.AsReadOnly();
+        public IReadOnlyCollection<AlertRule> AlertRules => _alertRules.AsReadOnly();
 
         #region Private fields
         private readonly List<Transaction> _transactions = [];
@@ -53,5 +53,15 @@ namespace BudgetAlert.Domain.Entities
         public decimal CurrentSpend => Transactions.Sum(t => t.Amount);
 
         public decimal SpendPercentage => Limit == 0 ? 0 : (CurrentSpend / Limit) * 100;
+
+        public IEnumerable<Alert> EvaluateAlertRules(decimal previousSpend, decimal currentSpend)
+        {
+            foreach (var rule in _alertRules.Where(r => r.IsActive))
+            {
+                var threshold = Limit * (rule.ThresholdPercentage / 100m);
+                if (previousSpend < threshold && currentSpend >= threshold)
+                    yield return Alert.Create(Id, rule.Id, currentSpend, rule.ThresholdPercentage, Limit);
+            }
+        }
     }
 }

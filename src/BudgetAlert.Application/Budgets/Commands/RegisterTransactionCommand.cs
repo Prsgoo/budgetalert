@@ -32,11 +32,11 @@ namespace BudgetAlert.Application.Budgets.Commands
 
         public async Task<Guid> Handle(RegisterTransactionCommand request, CancellationToken cancellationToken)
         {
-            var budget = await _budgetRepository.GetByIdAsync(request.BudgetId, cancellationToken)
+            var budget = await _budgetRepository.GetByIdWithTransactionsAsync(request.BudgetId, cancellationToken)
                 ?? throw new NotFoundException(nameof(Budget), request.BudgetId);
 
             var transaction = budget.RegisterTransaction(request.Amount, request.Description, request.OccurredAt);
-            _unitOfWork.Register(transaction);
+            _budgetRepository.AddTransaction(transaction);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             // Events are published after SaveChangesAsync so we never publish an event for a transaction
