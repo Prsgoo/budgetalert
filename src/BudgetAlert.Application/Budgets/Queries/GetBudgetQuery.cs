@@ -12,7 +12,10 @@ namespace BudgetAlert.Application.Budgets.Queries
     {
         public async Task<BudgetDto> Handle(GetBudgetQuery request, CancellationToken cancellationToken)
         {
-            var budget = await _budgetRepository.GetByIdWithTransactionsAsync(request.BudgetId, cancellationToken) ?? throw new NotFoundException(nameof(Budget), request.BudgetId);
+            var budget = await _budgetRepository.GetByIdWithTransactionsAsync(request.BudgetId, cancellationToken)
+                ?? throw new NotFoundException(nameof(Budget), request.BudgetId);
+            if (budget.IsArchived)
+                throw new NotFoundException(nameof(Budget), request.BudgetId);
             
             var recentTransactions = budget.Transactions
                 .OrderByDescending(t => t.OccurredAt)

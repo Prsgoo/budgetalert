@@ -94,6 +94,19 @@ public class GetBudgetQueryHandlerTests
     }
 
     [Fact]
+    public async Task Handle_ThrowsNotFoundExceptionWhenBudgetIsArchived()
+    {
+        var budget = Budget.Create("Monthly", 1000m, "EUR");
+        budget.Archive();
+        _repo.Setup(r => r.GetByIdWithTransactionsAsync(budget.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(budget);
+        var handler = new GetBudgetQueryHandler(_repo.Object);
+
+        await Assert.ThrowsAsync<NotFoundException>(() =>
+            handler.Handle(new GetBudgetQuery(budget.Id), CancellationToken.None));
+    }
+
+    [Fact]
     public async Task Handle_ReturnsTransactionsOrderedByOccurredAtDescending()
     {
         var budget = Budget.Create("Monthly", 5000m, "EUR");

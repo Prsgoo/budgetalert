@@ -195,4 +195,29 @@ public class BudgetTests
 
         Assert.Empty(budget.DomainEvents);
     }
+
+    [Fact]
+    public void Create_IsNotArchivedByDefault()
+    {
+        var budget = Budget.Create("Monthly", 1000m, "EUR");
+        Assert.False(budget.IsArchived);
+    }
+
+    [Fact]
+    public void Archive_SetsIsArchivedToTrue()
+    {
+        var budget = Budget.Create("Monthly", 1000m, "EUR");
+        budget.Archive();
+        Assert.True(budget.IsArchived);
+    }
+
+    [Fact]
+    public void UpdateDetails_UpdatesNameLimitAndCurrency()
+    {
+        var budget = Budget.Create("Monthly", 1000m, "EUR");
+        budget.UpdateDetails("Annual", 5000m, "USD");
+        Assert.Equal("Annual", budget.Name);
+        Assert.Equal(5000m, budget.Limit);
+        Assert.Equal("USD", budget.Currency);
+    }
 }

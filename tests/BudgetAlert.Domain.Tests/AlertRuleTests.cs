@@ -59,4 +59,22 @@ public class AlertRuleTests
         var rule = AlertRule.Create(Guid.NewGuid(), threshold);
         Assert.Equal(threshold, rule.ThresholdPercentage);
     }
+
+    [Fact]
+    public void Update_ChangesThresholdAndIsActive()
+    {
+        var rule = AlertRule.Create(Guid.NewGuid(), 80m);
+        rule.Update(50m, false);
+        Assert.Equal(50m, rule.ThresholdPercentage);
+        Assert.False(rule.IsActive);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(101)]
+    public void Update_WithInvalidThreshold_ThrowsArgumentOutOfRangeException(decimal threshold)
+    {
+        var rule = AlertRule.Create(Guid.NewGuid(), 80m);
+        Assert.Throws<ArgumentOutOfRangeException>(() => rule.Update(threshold, true));
+    }
 }

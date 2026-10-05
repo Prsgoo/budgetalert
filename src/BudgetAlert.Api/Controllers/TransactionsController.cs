@@ -1,5 +1,6 @@
 using BudgetAlert.Api.Models;
 using BudgetAlert.Application.Budgets.Commands;
+using BudgetAlert.Application.Budgets.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,6 +18,13 @@ namespace BudgetAlert.Api.Controllers
                 cancellationToken);
 
             return CreatedAtAction(nameof(BudgetsController.GetById), "Budgets", new { id = budgetId }, new { transactionId });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll([FromRoute] Guid budgetId, CancellationToken cancellationToken)
+        {
+            var transactions = await _sender.Send(new GetTransactionsQuery(budgetId), cancellationToken);
+            return Ok(transactions);
         }
     }
 }
