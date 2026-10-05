@@ -53,5 +53,15 @@ namespace BudgetAlert.Domain.Entities
         public decimal CurrentSpend => Transactions.Sum(t => t.Amount);
 
         public decimal SpendPercentage => Limit == 0 ? 0 : (CurrentSpend / Limit) * 100;
+
+        public IEnumerable<Alert> EvaluateAlertRules(decimal previousSpend, decimal currentSpend)
+        {
+            foreach (var rule in _alertRules.Where(r => r.IsActive))
+            {
+                var threshold = Limit * (rule.ThresholdPercentage / 100m);
+                if (previousSpend < threshold && currentSpend >= threshold)
+                    yield return Alert.Create(Id, rule.Id, currentSpend, rule.ThresholdPercentage, Limit);
+            }
+        }
     }
 }
