@@ -31,6 +31,8 @@ public class FakeBudgetRepository : IBudgetRepository
     private readonly Dictionary<Guid, Budget> _store = [];
 
     public void Add(Budget budget) => _store[budget.Id] = budget;
+    public void AddAlertRule(AlertRule alertRule) { } // already on budget's in-memory collection
+    public void AddTransaction(Transaction transaction) { } // already on budget's in-memory collection
     public Task<Budget?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         => Task.FromResult(_store.TryGetValue(id, out var b) ? b : null);
     public Task<Budget?> GetByIdWithTransactionsAsync(Guid id, CancellationToken cancellationToken = default)
@@ -56,7 +58,6 @@ public class FakeAlertRepository : IAlertRepository
 public class FakeUnitOfWork : IUnitOfWork
 {
     public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) => Task.FromResult(1);
-    public void Register<T>(T entity) where T : class { }
 }
 
 public class NoOpEventBus : IEventBus

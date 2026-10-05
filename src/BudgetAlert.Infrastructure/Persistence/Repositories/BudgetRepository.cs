@@ -6,10 +6,11 @@ namespace BudgetAlert.Infrastructure.Persistence.Repositories
 {
     public class BudgetRepository(BudgetAlertDbContext _context) : IBudgetRepository
     {
-        public void Add(Budget budget)
-        {
-            _context.Budgets.Add(budget);
-        }
+        public void Add(Budget budget) => _context.Budgets.Add(budget);
+
+        public void AddAlertRule(AlertRule alertRule) => _context.AlertRules.Add(alertRule);
+
+        public void AddTransaction(Transaction transaction) => _context.Transactions.Add(transaction);
 
         public Task<Budget?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {

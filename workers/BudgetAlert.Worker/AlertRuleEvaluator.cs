@@ -5,7 +5,6 @@ namespace BudgetAlert.Worker
 {
     public class AlertRuleEvaluator(IBudgetRepository _budgetRepo, IAlertRepository _alertRepo, IUnitOfWork _unitOfWork)
     {
-
         public async Task EvaluateAsync(TransactionRegistered evt, CancellationToken cancellationToken)
         {
             var budget = await _budgetRepo.GetByIdWithAlertRulesAsync(evt.BudgetId, cancellationToken);
