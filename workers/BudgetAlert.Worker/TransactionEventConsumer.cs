@@ -24,18 +24,7 @@ namespace BudgetAlert.Worker
 
             try
             {
-                var factory = new ConnectionFactory
-                {
-                    HostName = _options.Host,
-                    Port = _options.Port,
-                    UserName = _options.Username,
-                    Password = _options.Password
-                };
-
-                _connection = factory.CreateConnectionAsync().GetAwaiter().GetResult();
-                _channel = _connection.CreateChannelAsync().GetAwaiter().GetResult();
-                _channel.ExchangeDeclareAsync(_options.ExchangeName, ExchangeType.Topic, durable: true)
-                    .GetAwaiter().GetResult();
+                (_connection, _channel) = RabbitMqChannelFactory.Create(_options);
                 _channel.QueueDeclareAsync("budget-alert.transaction-registered", durable: true, exclusive: false, autoDelete: false)
                     .GetAwaiter().GetResult();
                 _channel.QueueBindAsync("budget-alert.transaction-registered", _options.ExchangeName, "transactionregistered")
