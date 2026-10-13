@@ -1,4 +1,3 @@
-using BudgetAlert.Application.Contracts;
 using BudgetAlert.Domain.Repositories;
 using BudgetAlert.Infrastructure.Messaging;
 using BudgetAlert.Infrastructure.Persistence;
@@ -16,8 +15,7 @@ namespace BudgetAlert.Infrastructure.Extensions
             services.AddDbContext<BudgetAlertDbContext>(opts =>
                 opts.UseSqlServer(config.GetConnectionString("Default")));
 
-            services.Configure<RabbitMqOptions>(config.GetSection("RabbitMq"));
-            services.AddSingleton<IEventBus, RabbitMqEventBus>();
+            services.AddMessaging(config);
 
             services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<BudgetAlertDbContext>());
             services.AddScoped<IBudgetRepository, BudgetRepository>();
