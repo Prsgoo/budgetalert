@@ -1,6 +1,8 @@
+using Azure.Messaging.ServiceBus;
 using BudgetAlert.Application.Contracts;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace BudgetAlert.Infrastructure.Messaging
 {
@@ -28,8 +30,13 @@ namespace BudgetAlert.Infrastructure.Messaging
 
         private static IServiceCollection AddAzureServiceBusMessaging(this IServiceCollection services, IConfiguration configuration)
         {
-            // Intentional stub - returns services unchanged until PRS-101 fills this in.
-            // The app will start but fail at runtime when messaging is attempted.
+            services.Configure<AzureServiceBusOptions>(configuration.GetSection("Messaging:AzureServiceBus"));
+            services.AddSingleton(sp =>
+            {
+                var opts = sp.GetRequiredService<IOptions<AzureServiceBusOptions>>().Value;
+                return new ServiceBusClient(opts.ConnectionString);
+            });
+            services.AddSingleton<IEventBus, AzureServiceBusEventBus>();
             return services;
         }
     }
