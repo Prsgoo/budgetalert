@@ -16,7 +16,7 @@ namespace BudgetAlert.Infrastructure.Messaging
             var body = JsonSerializer.SerializeToUtf8Bytes(@event, @event.GetType());
             var message = new ServiceBusMessage(body)
             {
-                Subject = typeof(T).Name
+                Subject = @event.GetType().Name
             };
             await sender.SendMessageAsync(message, cancellationToken);
         }

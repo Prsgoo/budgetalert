@@ -33,6 +33,8 @@ services:
       MSSQL_SA_PASSWORD: "Password123!"
     ports:
       - "5672:5672"
+    volumes:
+      - ./infra/servicebus-emulator-config.json:/ServiceBus_Emulator/ConfigFiles/Config.json
     depends_on:
       - sqledge
 
