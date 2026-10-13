@@ -2,9 +2,9 @@
 
 ![CI](https://github.com/Prsgoo/BudgetAlert/actions/workflows/ci.yml/badge.svg)
 
-Event-driven budget alerting REST API built with .NET 10, Clean Architecture, CQRS, and RabbitMQ.
+Event-driven budget alerting REST API built with .NET 10, Clean Architecture, and CQRS.
 
-A REST API that tracks budgets and fires alerts when spending thresholds are crossed. Built as a portfolio project to demonstrate Clean Architecture, CQRS, and event-driven patterns in .NET - the same patterns used in production Azure Service Bus deployments.
+Tracks budgets and fires alerts when spending thresholds are crossed. The messaging layer is provider-agnostic: RabbitMQ locally, Azure Service Bus in production - switchable via config with no code changes. Authentication is similarly toggled: off for local development, Entra ID JWT validation in production.
 
 ## Architecture
 
@@ -20,9 +20,9 @@ A REST API that tracks budgets and fires alerts when spending thresholds are cro
                [Domain Layer] <-- pure C#, no deps
                         |
               [Infrastructure Layer]
-               EF Core     RabbitMQ publisher
+               EF Core     IEventBus (pluggable)
                                   |
-                           [RabbitMQ]
+                    RabbitMQ / Azure Service Bus
                                   |
                       [.NET Worker Service]
                        evaluates alert rules
@@ -37,11 +37,13 @@ A REST API that tracks budgets and fires alerts when spending thresholds are cro
 |---|---|
 | API | ASP.NET Core 10, MediatR, FluentValidation |
 | Domain | Pure C#, no NuGet deps |
-| Persistence | EF Core 10, SQL Server |
-| Messaging | RabbitMQ (patterns identical to Azure Service Bus) |
+| Persistence | EF Core 10, SQL Server / Azure SQL |
+| Messaging | RabbitMQ (local) or Azure Service Bus (production) |
+| Auth | Entra ID JWT via Microsoft.Identity.Web (toggle off for local dev) |
+| Passwordless access | DefaultAzureCredential (Azure SQL + Service Bus - no secrets in config) |
 | Background processing | .NET Worker Service |
 | Testing | xUnit, Moq, FluentAssertions, Testcontainers, WebApplicationFactory |
-| CI | GitHub Actions (build + test on PR, release build on merge to main) |
+| CI/CD | GitHub Actions - build + test on PR, container publish and deploy on merge |
 
 ## Local Setup
 
@@ -114,10 +116,10 @@ dotnet format                           # format code
 src/
   BudgetAlert.Domain/               # Entities, domain events, interfaces - no dependencies
   BudgetAlert.Application/          # CQRS handlers, validators, pipeline behaviors
-  BudgetAlert.Infrastructure/       # EF Core DbContext, RabbitMQ publisher
+  BudgetAlert.Infrastructure/       # EF Core DbContext, pluggable messaging publishers
   BudgetAlert.Api/                  # Controllers, middleware, DI wiring
 workers/
-  BudgetAlert.Worker/               # RabbitMQ consumer + alert rule evaluator
+  BudgetAlert.Worker/               # Message consumer + alert rule evaluator
 tests/
   BudgetAlert.Domain.Tests/
   BudgetAlert.Application.Tests/
@@ -125,13 +127,23 @@ tests/
   BudgetAlert.Api.Tests/            # Controller tests with fake repositories
   BudgetAlert.Api.IntegrationTests/ # Integration tests with Testcontainers (real SQL Server)
   BudgetAlert.Worker.Tests/
+infra/
+  main.bicep                        # Azure SQL + Service Bus provisioning
+  main.bicepparam                   # Deployment parameters
 ```
 
-## Messaging Providers
+## Environment Configurations
 
-The app supports two messaging backends, switchable via config with no code changes.
+The app has three independent config dimensions. Any combination is valid:
 
-### RabbitMQ (default)
+| Messaging | Database | Auth | Notes |
+|-----------|----------|------|-------|
+| RabbitMQ | Local SQL | Off | Default - nothing to change |
+| ASB emulator | Local SQL | Off | `Messaging:Provider=AzureServiceBus`, set `ConnectionString` |
+| Azure Service Bus | Azure SQL | Off | Passwordless via DefaultAzureCredential, no keys in config |
+| Azure Service Bus | Azure SQL | On | Full production stack - Entra ID JWT + Managed Identity |
+
+### RabbitMQ (default for local development)
 
 ```bash
 docker compose --profile rabbitmq up -d sqlserver rabbitmq
@@ -139,37 +151,24 @@ dotnet run --project src/BudgetAlert.Api
 dotnet run --project workers/BudgetAlert.Worker
 ```
 
-### Azure Service Bus emulator (local, zero cost)
+### Azure Service Bus emulator (local, zero cloud cost)
 
 ```bash
 docker compose --profile azureservicebus up -d sqlserver sqledge servicebus-emulator
 ```
 
-Copy the connection string from `appsettings.AzureServiceBus.example.json` into `appsettings.json` for both Api and Worker, then run:
+Copy `appsettings.AzureServiceBus.example.json` values into `appsettings.json` for both Api and Worker, then run the projects normally. The emulator auto-creates the queue on first message.
 
-```bash
-dotnet run --project src/BudgetAlert.Api
-dotnet run --project workers/BudgetAlert.Worker
-```
+### Azure (production)
 
-The emulator auto-creates the queue on first message - no pre-provisioning needed.
-
-### Mix and match
-
-There are three independent config dimensions. Any combination works:
-
-| Messaging | Database | Auth | What to change |
-|-----------|----------|------|----------------|
-| RabbitMQ | Local SQL | Off | Default - nothing to change |
-| ASB emulator | Local SQL | Off | `Messaging:Provider` = `AzureServiceBus`, set `ConnectionString` from example |
-| RabbitMQ | Azure SQL | Off | `ConnectionStrings:Default` = Azure SQL connection string |
-| ASB emulator | Azure SQL | Off | Both of the above |
-| Any | Any | On | `Auth:Enabled` = `true`, set `Auth:AzureAd` section (PRS-104) |
+See [infra/README.md](infra/README.md) for provisioning and configuration.
 
 ## Design Decisions
 
-- **RabbitMQ over Azure Service Bus** - no cloud account needed locally; the producer/consumer pattern is identical and swapping is one NuGet package change.
-- **MediatR for CQRS** - pipeline behaviors are the key value: logging and validation run on every command/query without touching handlers.
+- **Provider-agnostic messaging** - `IEventBus` abstraction lets local development use RabbitMQ without a cloud account. The producer/consumer pattern is identical; switching providers is a config change. The same approach applies when targeting other brokers (Kafka, Azure Event Hubs).
+- **Auth toggle** - `Auth:Enabled=false` runs a permissive no-op authorization policy so `[Authorize]` attributes are present in code but don't block local requests. This avoids maintaining two code paths while keeping the security surface clear in production.
+- **DefaultAzureCredential for passwordless access** - no connection strings with passwords or SAS keys in production config. Locally, `az login` satisfies the credential chain; Managed Identity takes over when hosted in Azure.
+- **MediatR for CQRS** - pipeline behaviors (logging, validation) run on every command and query without touching handler code.
 - **Worker Service over Azure Functions** - same `BackgroundService` pattern, no cloud dependency for local development or CI.
 - **EF Core private setters** - domain model enforces invariants; persistence is an infrastructure concern and should not dictate how entities are constructed.
 

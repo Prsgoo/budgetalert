@@ -1,3 +1,4 @@
+using Azure.Identity;
 using Azure.Messaging.ServiceBus;
 using BudgetAlert.Application.Contracts;
 using Microsoft.Extensions.Configuration;
@@ -34,7 +35,9 @@ namespace BudgetAlert.Infrastructure.Messaging
             services.AddSingleton(sp =>
             {
                 var opts = sp.GetRequiredService<IOptions<AzureServiceBusOptions>>().Value;
-                return new ServiceBusClient(opts.ConnectionString);
+                return !string.IsNullOrEmpty(opts.FullyQualifiedNamespace)
+                    ? new ServiceBusClient(opts.FullyQualifiedNamespace, new DefaultAzureCredential())
+                    : new ServiceBusClient(opts.ConnectionString);
             });
             services.AddSingleton<IEventBus, AzureServiceBusEventBus>();
             return services;

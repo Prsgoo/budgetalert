@@ -14,6 +14,9 @@ param sqlAdminPassword string
 @description('Your current developer IP - run: curl -s ifconfig.me')
 param developerIp string
 
+@description('Object ID of the identity to grant Service Bus Data Owner - run: az ad signed-in-user show --query id -o tsv')
+param principalId string = ''
+
 // Azure SQL Server
 resource sqlServer 'Microsoft.Sql/servers@2023-08-01-preview' = {
   name: 'budgetalert-sql-${uniqueSuffix}'
@@ -64,6 +67,16 @@ resource serviceBus 'Microsoft.ServiceBus/namespaces@2022-10-01-preview' = {
 resource serviceBusQueue 'Microsoft.ServiceBus/namespaces/queues@2022-10-01-preview' = {
   parent: serviceBus
   name: 'budget-events'
+}
+
+// Assign Azure Service Bus Data Owner to the provided identity (skipped when principalId is empty)
+resource sbRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(principalId)) {
+  scope: serviceBus
+  name: guid(serviceBus.id, principalId, 'ServiceBusDataOwner')
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '090c5cfd-751d-490a-894a-3ce6f1109419')
+    principalId: principalId
+  }
 }
 
 // Outputs - paste directly into appsettings.json
