@@ -40,10 +40,20 @@ jobs:
           push: true
           tags: ${{ steps.meta-api.outputs.tags }}
 
+      - name: Extract metadata (Worker)
+        id: meta-worker
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}/worker
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha
+
       - name: Build and push Worker image
         uses: docker/build-push-action@v5
         with:
           context: .
           file: workers/BudgetAlert.Worker/Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository }}/worker:${{ github.ref_name }}
+          tags: ${{ steps.meta-worker.outputs.tags }}
