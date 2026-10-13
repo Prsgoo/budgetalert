@@ -2,10 +2,12 @@ using BudgetAlert.Api.Models;
 using BudgetAlert.Application.Budgets.Commands;
 using BudgetAlert.Application.Budgets.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BudgetAlert.Api.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/budgets/{budgetId:guid}/transactions")]
     public class TransactionsController(ISender _sender) : ControllerBase
