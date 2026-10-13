@@ -9,12 +9,32 @@ services:
 
   rabbitmq:
     image: rabbitmq:3-management
+    profiles: ["rabbitmq"]
     ports:
       - "5672:5672"
       - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: "${RABBITMQ_USER}"
       RABBITMQ_DEFAULT_PASS: "${RABBITMQ_PASS}"
+
+  sqledge:
+    image: mcr.microsoft.com/azure-sql-edge:latest
+    profiles: ["azureservicebus"]
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "Password123!"
+
+  servicebus-emulator:
+    image: mcr.microsoft.com/azure-messaging/servicebus-emulator:latest
+    profiles: ["azureservicebus"]
+    environment:
+      ACCEPT_EULA: "Y"
+      SQL_SERVER: sqledge
+      MSSQL_SA_PASSWORD: "Password123!"
+    ports:
+      - "5672:5672"
+    depends_on:
+      - sqledge
 
   api:
     build:
@@ -27,7 +47,6 @@ services:
       RabbitMq__Host: "rabbitmq"
     depends_on:
       - sqlserver
-      - rabbitmq
 
   worker:
     build:
@@ -38,4 +57,3 @@ services:
       RabbitMq__Host: "rabbitmq"
     depends_on:
       - sqlserver
-      - rabbitmq

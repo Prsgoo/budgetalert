@@ -127,6 +127,45 @@ tests/
   BudgetAlert.Worker.Tests/
 ```
 
+## Messaging Providers
+
+The app supports two messaging backends, switchable via config with no code changes.
+
+### RabbitMQ (default)
+
+```bash
+docker compose --profile rabbitmq up -d sqlserver rabbitmq
+dotnet run --project src/BudgetAlert.Api
+dotnet run --project workers/BudgetAlert.Worker
+```
+
+### Azure Service Bus emulator (local, zero cost)
+
+```bash
+docker compose --profile azureservicebus up -d sqlserver sqledge servicebus-emulator
+```
+
+Copy the connection string from `appsettings.AzureServiceBus.example.json` into `appsettings.json` for both Api and Worker, then run:
+
+```bash
+dotnet run --project src/BudgetAlert.Api
+dotnet run --project workers/BudgetAlert.Worker
+```
+
+The emulator auto-creates the queue on first message - no pre-provisioning needed.
+
+### Mix and match
+
+There are three independent config dimensions. Any combination works:
+
+| Messaging | Database | Auth | What to change |
+|-----------|----------|------|----------------|
+| RabbitMQ | Local SQL | Off | Default - nothing to change |
+| ASB emulator | Local SQL | Off | `Messaging:Provider` = `AzureServiceBus`, set `ConnectionString` from example |
+| RabbitMQ | Azure SQL | Off | `ConnectionStrings:Default` = Azure SQL connection string |
+| ASB emulator | Azure SQL | Off | Both of the above |
+| Any | Any | On | `Auth:Enabled` = `true`, set `Auth:AzureAd` section (PRS-104) |
+
 ## Design Decisions
 
 - **RabbitMQ over Azure Service Bus** - no cloud account needed locally; the producer/consumer pattern is identical and swapping is one NuGet package change.
