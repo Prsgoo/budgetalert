@@ -481,3 +481,7 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Local development overrides with real Azure config - never commit
+src/BudgetAlert.Api/appsettings.Development.json
+workers/BudgetAlert.Worker/appsettings.Development.json
